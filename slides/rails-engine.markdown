@@ -134,7 +134,7 @@ config/locales/\*, and load tasks at lib/tasks/\*.
 Specifying the engine inside the Gemfile would be done by specifying it as a normal, everyday gem Gemfile
 
 ```ruby
-gem 'shopping_cart', path: "/path/to/shopping_cart"
+gem 'shopping_cart', path: '/path/to/shopping_cart'
 ```
 
 By placing the gem in the Gemfile it will be loaded when Rails is loaded. It will first require lib/shopping_cart.rb
@@ -147,19 +147,20 @@ application's config/routes.rb file.
 config/routes.rb <!-- .element: class="filename" -->
 
 ```ruby
-mount ShoppingCart::Engine, at: "/cart"
+mount ShoppingCart::Engine, at: '/cart'
 ```
 
 ---
 
-## Testing with RSpec, Capybara, and FactoryGirl
+## Testing with RSpec, Capybara, and FactoryBot
 
 Add these lines to the gemspec file
 
 ```ruby
 s.add_development_dependency 'rspec-rails'
 s.add_development_dependency 'capybara'
-s.add_development_dependency 'factory_girl_rails'
+s.add_development_dependency 'factory_bot_rails'
+s.add_development_dependency 'database_cleaner'
 ```
 
 Add this line to your gemspec file
@@ -183,7 +184,7 @@ end
 APP_RAKEFILE = File.expand_path("../spec/dummy/Rakefile", __FILE__)
 load 'rails/tasks/engine.rake'
  
-Bundler::GemHelper.install_tasks
+require 'bundler/gem_tasks'
 Dir[File.join(File.dirname(__FILE__), 'tasks/**/*.rake')].each {|f| load f }
  
 require 'rspec/core'
@@ -192,7 +193,7 @@ require 'rspec/core/rake_task'
 desc "Run all specs in spec directory (excluding plugin specs)"
 RSpec::Core::RakeTask.new(spec: 'app:db:test:prepare')
  
-task default: :spec
+task default: 'app:spec'
 ```
 
 --
@@ -205,8 +206,10 @@ ENV['RAILS_ENV'] ||= 'test'
 require File.expand_path("../dummy/config/environment.rb",  __FILE__)
 require 'rspec/rails'
 require 'rspec/autorun'
-require 'factory_girl_rails'
- 
+require 'factory_bot_rails'
+require 'capybara/rspec'
+require 'database_cleaner'
+
 Rails.backtrace_cleaner.remove_silencers!
  
 # Load support files
@@ -216,7 +219,7 @@ RSpec.configure do |config|
   config.mock_with :rspec
   config.use_transactional_fixtures = true
   config.infer_base_class_for_anonymous_controllers = false
-  config.order = "random"
+  config.order = 'random'
 end
 ```
 
@@ -227,7 +230,7 @@ module ShoppingCart
   class Engine < ::Rails::Engine
     config.generators do |g|
       g.test_framework      :rspec,        fixture: false
-      g.fixture_replacement :factory_girl, dir: 'spec/factories'
+      g.fixture_replacement :factory_bot, dir: 'spec/factories'
       g.assets false
       g.helper false
     end
